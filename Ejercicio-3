@@ -1,0 +1,62 @@
+class Node:
+    def __init__(self, value):
+        self.val = value
+        self.left = None
+        self.right = None
+
+class BinaryTree:
+    def __init__(self):
+        self.root = None
+
+    def build_tree_from_list(self, values):
+        """Builds a binary tree (level order) from a list of values (None for missing nodes)."""
+        if not values:
+            return None
+        nodes = [None if val is None else Node(val) for val in values]
+        kids = nodes[::-1]
+        self.root = kids.pop()
+        for node in nodes:
+            if node:
+                if kids: node.left = kids.pop()
+                if kids: node.right = kids.pop()
+        return self.root
+
+def lowest_common_ancestor(root, p, q):
+    if root is None:
+        return None
+    if root.val == p or root.val == q:
+        return root
+    left = lowest_common_ancestor(root.left, p, q)
+    right = lowest_common_ancestor(root.right, p, q)
+    if left and right:
+        return root
+    return left if left else right
+def test_lowest_common_ancestor():
+    """Test the lowest_common_ancestor function. 👨‍👩‍👧‍👦"""
+
+    tree1 = BinaryTree()
+    tree1.build_tree_from_list([1, 2, 3, 4, 5, None, 6])
+    lca1 = lowest_common_ancestor(tree1.root, 4, 6)
+    print("Test 1 - Expected: 1, Got:", lca1.val if lca1 else None)
+
+    tree2 = BinaryTree()
+    tree2.build_tree_from_list([1, 2, 3, 4])
+    lca2 = lowest_common_ancestor(tree2.root, 2, 4)
+    print("Test 2 - Expected: 2, Got:", lca2.val if lca2 else None)
+
+    tree3 = BinaryTree()
+    tree3.build_tree_from_list([1, 2, 3])
+    lca3 = lowest_common_ancestor(tree3.root, 2, 3)
+    print("Test 3 - Expected: 1, Got:", lca3.val if lca3 else None)
+
+    tree4 = BinaryTree()
+    tree4.build_tree_from_list([1, 2, 3])
+    lca4 = lowest_common_ancestor(tree4.root, 1, 3)
+    print("Test 4 - Expected: 1, Got:", lca4.val if lca4 else None)
+
+    tree5 = BinaryTree()
+    tree5.build_tree_from_list([1, 2, 3])
+    lca5 = lowest_common_ancestor(tree5.root, 2, 99) 
+    print("Test 5 - Expected: None, Got:", lca5.val if lca5 else None)
+
+test_lowest_common_ancestor()
