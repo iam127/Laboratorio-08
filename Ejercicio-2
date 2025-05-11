@@ -1,0 +1,93 @@
+import collections
+
+class Node:
+    def __init__(self, value):
+        self.val = value
+        self.left = None
+        self.right = None
+
+class BinaryTree:
+    def __init__(self):
+        self.root = None
+
+    def build_tree_from_list(self, values):
+        if not values:
+            return
+        self.root = Node(values[0])
+        queue = collections.deque([self.root])
+        i = 1
+        while queue and i < len(values):
+            current = queue.popleft()
+            if i < len(values) and values[i] is not None:
+                current.left = Node(values[i])
+                queue.append(current.left)
+            i += 1
+            if i < len(values) and values[i] is not None:
+                current.right = Node(values[i])
+                queue.append(current.right)
+            i += 1
+
+def serialize(root):
+    """Serializes a binary tree to a string."""
+    if not root:
+        return ''
+    result = []
+    queue = collections.deque([root])
+    while queue:
+        node = queue.popleft()
+        if node:
+            result.append(str(node.val))
+            queue.append(node.left)
+            queue.append(node.right)
+        else:
+            result.append('None')
+    return ','.join(result)
+
+def deserialize(data):
+    """Deserializes a string to a binary tree."""
+    if not data:
+        return None
+    values = data.split(',')
+    root = Node(int(values[0]))
+    queue = collections.deque([root])
+    i = 1
+    while queue and i < len(values):
+        current = queue.popleft()
+        if values[i] != 'None':
+            current.left = Node(int(values[i]))
+            queue.append(current.left)
+        i += 1
+        if i < len(values) and values[i] != 'None':
+            current.right = Node(int(values[i]))
+            queue.append(current.right)
+        i += 1
+    return root
+
+def inorder_traversal(root):
+    if not root:
+        return []
+    return inorder_traversal(root.left) + [root.val] + inorder_traversal(root.right)
+
+def test_serialize_deserialize():
+    """Test the serialize and deserialize functions. 💾"""
+    trees = [
+        ([1, 2, 3, 4, 5, None, 6], "🌳"),
+        ([], "🈳"),
+        ([42], "🌱"),
+        ([1, 2, None, 3, None, None, None, 4], "📐⬅️"),
+        ([1, None, 2, None, None, None, 3, None, None, None, None, None, None, None, 4], "📐➡️")
+    ]
+
+    for idx, (tree_data, emoji) in enumerate(trees, 1):
+        tree = BinaryTree()
+        tree.build_tree_from_list(tree_data)
+        serialized = serialize(tree.root)
+        deserialized_root = deserialize(serialized)
+        original_inorder = inorder_traversal(tree.root)
+        deserialized_inorder = inorder_traversal(deserialized_root)
+        print(f"Test Case {idx} {emoji}: {'PASS ✅' if original_inorder == deserialized_inorder else 'FAIL ❌'}")
+        print(f"Serialized: {serialized}")
+        print(f"Inorder original: {original_inorder}")
+        print(f"Inorder deserialized: {deserialized_inorder}\n")
+
+test_serialize_deserialize()
