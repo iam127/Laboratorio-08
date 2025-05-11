@@ -1,76 +1,122 @@
+from collections import defaultdict, deque
+from typing import List, Optional
+
 class TreeNode:
-    def __init__(self, val):
+    def __init__(self, val=0, left=None, right=None):
         self.val = val
-        self.left = None
-        self.right = None
+        self.left = left
+        self.right = right
 
 class BinaryTree:
     def __init__(self):
         self.root = None
-
+    
     def build_tree_from_list(self, values):
+        """Build a binary tree from a list of values (level order)."""
         if not values:
             return None
+        
         self.root = TreeNode(values[0])
-        queue = [self.root]
+        queue = deque([self.root])
         i = 1
-        while i < len(values):
-            current = queue.pop(0)
-            if current:
-                if i < len(values) and values[i] is not None:
-                    current.left = TreeNode(values[i])
-                queue.append(current.left)
-                i += 1
-                if i < len(values) and values[i] is not None:
-                    current.right = TreeNode(values[i])
-                queue.append(current.right)
-                i += 1
+        
+        while queue and i < len(values):
+            node = queue.popleft()
+            
+            if i < len(values) and values[i] is not None:
+                node.left = TreeNode(values[i])
+                queue.append(node.left)
+            i += 1
+            
+            if i < len(values) and values[i] is not None:
+                node.right = TreeNode(values[i])
+                queue.append(node.right)
+            i += 1
+        
+        return self.root
 
-def prune_tree(node, target):
-    if not node:
-        return None
+def vertical_order_traversal(root: Optional[TreeNode]) -> List[List[int]]:
+    """
+    Returns a vertical order traversal of a binary tree.
     
-    node.left = prune_tree(node.left, target)
-    node.right = prune_tree(node.right, target)
-
-    if node.val != target and not node.left and not node.right:
-        return None
+    For each node, we assign a horizontal position: 
+    - Root starts at position 0
+    - Left child is at parent's position - 1
+    - Right child is at parent's position + 1
     
-    if node.val == target:
+    The function returns nodes grouped by their horizontal positions,
+    ordered from leftmost to rightmost.
+    """
+    if not root:
+        return []
 
-        if node.left or node.right:
-            return node
-        else:
-            return node  
+    columns = defaultdict(list)
+    
+    queue = deque([(root, 0)]) 
+    
+    min_col = max_col = 0
+    
+    while queue:
+        node, col = queue.popleft()
+        
+        columns[col].append(node.val)
+        
+        min_col = min(min_col, col)
+        max_col = max(max_col, col)
+        
+        if node.left:
+            queue.append((node.left, col - 1))
+        
+        if node.right:
+            queue.append((node.right, col + 1))
+    
+    result = []
+    for col in range(min_col, max_col + 1):
+        result.append(columns[col])
+    
+    return result
 
-    return node
-def test_prune_tree():
+def test_vertical_order_traversal():
+    """Test the vertical_order_traversal function. 📏"""
+
     tree1 = BinaryTree()
     tree1.build_tree_from_list([1, 2, 3, 4, 5, None, 6])
-    pruned1 = prune_tree(tree1.root, 1)
-
+    result1 = vertical_order_traversal(tree1.root)
+    expected1 = [[4], [2], [1, 5], [3], [6]]
+    print(f"Test Case 1: {'PASS' if result1 == expected1 else 'FAIL'}")
+    print(f"Expected: {expected1}")
+    print(f"Got: {result1}\n")
+    
     tree2 = BinaryTree()
-    tree2.root = TreeNode(1)
-    tree2.root.left = TreeNode(2)
-    tree2.root.right = TreeNode(3)
-    tree2.root.left.left = TreeNode(1)
-    tree2.root.left.right = TreeNode(5)
-    tree2.root.right.right = TreeNode(1)
-    pruned2 = prune_tree(tree2.root, 1)
-
+    tree2.build_tree_from_list([1, 2, None, 3])
+    result2 = vertical_order_traversal(tree2.root)
+    expected2 = [[3], [2], [1]]
+    print(f"Test Case 2: {'PASS' if result2 == expected2 else 'FAIL'}")
+    print(f"Expected: {expected2}")
+    print(f"Got: {result2}\n")
+    
     tree3 = BinaryTree()
-    pruned3 = prune_tree(tree3.root, 1)
-
+    result3 = vertical_order_traversal(tree3.root)
+    expected3 = []
+    print(f"Test Case 3: {'PASS' if result3 == expected3 else 'FAIL'}")
+    print(f"Expected: {expected3}")
+    print(f"Got: {result3}\n")
+    
     tree4 = BinaryTree()
-    tree4.build_tree_from_list([1, 2, 3])
-    pruned4 = prune_tree(tree4.root, 4)
-
+    tree4.build_tree_from_list([1])
+    result4 = vertical_order_traversal(tree4.root)
+    expected4 = [[1]]
+    print(f"Test Case 4: {'PASS' if result4 == expected4 else 'FAIL'}")
+    print(f"Expected: {expected4}")
+    print(f"Got: {result4}\n")
+    
     tree5 = BinaryTree()
-    tree5.root = TreeNode(5)
-    tree5.root.left = TreeNode(5)
-    tree5.root.right = TreeNode(5)
-    pruned5 = prune_tree(tree5.root, 5)
+    tree5.build_tree_from_list([1, 2, 3, 4, 5, 6, 7])
+    result5 = vertical_order_traversal(tree5.root)
+    expected5 = [[4], [2], [1, 5, 6], [3], [7]]
+    print(f"Test Case 5: {'PASS' if result5 == expected5 else 'FAIL'}")
+    print(f"Expected: {expected5}")
+    print(f"Got: {result5}\n")
 
-    print("All test cases ran. ✅ You can implement print_tree or visualize trees to inspect the results.")
-
-test_prune_tree()
+if __name__ == "__main__":
+    test_vertical_order_traversal()
