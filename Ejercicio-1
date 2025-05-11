@@ -1,0 +1,116 @@
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class BinarySearchTree:
+    def __init__(self):
+        self.root = None
+    
+    def insert(self, val):
+        if not self.root:
+            self.root = TreeNode(val)
+            return
+        
+        def _insert(node, val):
+            if val < node.val:
+                if not node.left:
+                    node.left = TreeNode(val)
+                else:
+                    _insert(node.left, val)
+            else:
+                if not node.right:
+                    node.right = TreeNode(val)
+                else:
+                    _insert(node.right, val)
+        
+        _insert(self.root, val)
+    
+    def get_height(self):
+        def height(node):
+            if not node: return 0
+            return 1 + max(height(node.left), height(node.right))
+        return height(self.root)
+    
+    def is_balanced(self):
+        balanced = True
+        
+        def check_height(node):
+            nonlocal balanced
+            if not node or not balanced: return 0
+            left_h = check_height(node.left)
+            right_h = check_height(node.right)
+            if abs(left_h - right_h) > 1: balanced = False
+            return 1 + max(left_h, right_h)
+        
+        check_height(self.root)
+        return balanced
+    
+    def to_array(self):
+        result = []
+        def inorder(node):
+            if not node: return
+            inorder(node.left)
+            result.append(node.val)
+            inorder(node.right)
+        inorder(self.root)
+        return result
+
+def balance_bst(bst):
+    """Balances a binary search tree"""
+    if not bst.root: return BinarySearchTree()
+    
+    sorted_array = bst.to_array()
+    balanced_bst = BinarySearchTree()
+    
+    def build_balanced_tree(arr, start, end):
+        if start > end: return None
+        mid = (start + end) // 2
+        root = TreeNode(arr[mid])
+        root.left = build_balanced_tree(arr, start, mid - 1)
+        root.right = build_balanced_tree(arr, mid + 1, end)
+        return root
+    
+    balanced_bst.root = build_balanced_tree(sorted_array, 0, len(sorted_array) - 1)
+    return balanced_bst
+
+def test_balance_bst():
+    """Test the balance_bst function"""
+    trees = []
+    
+    bst1 = BinarySearchTree()
+    for val in [4, 2, 6, 1, 3, 5, 7]: bst1.insert(val)
+    trees.append(("Already balanced tree", bst1))
+    
+    bst2 = BinarySearchTree()
+    for val in [1, 2, 3, 4, 5]: bst2.insert(val)
+    trees.append(("Right-skewed tree", bst2))
+    
+    bst3 = BinarySearchTree()
+    for val in [5, 4, 3, 2, 1]: bst3.insert(val)
+    trees.append(("Left-skewed tree", bst3))
+    
+    trees.append(("Empty tree", BinarySearchTree()))
+    
+    bst5 = BinarySearchTree()
+    bst5.insert(42)
+    trees.append(("Single node tree", bst5))
+    
+    for i, (name, tree) in enumerate(trees, 1):
+
+        balanced = balance_bst(tree)
+        
+        print(f"Test Case {i}: {name}")
+        print(f"Original height: {tree.get_height()}, Balanced: {tree.is_balanced()}")
+        print(f"New height: {balanced.get_height()}, Balanced: {balanced.is_balanced()}")
+        print(f"Values preserved: {tree.to_array() == balanced.to_array()}")
+        print()
+        
+        assert balanced.is_balanced(), f"Test case {i} failed: Tree should be balanced"
+        assert tree.to_array() == balanced.to_array(), f"Test case {i} failed: Values not preserved"
+    
+    print("All test cases passed! ✅")
+
+
+test_balance_bst()
