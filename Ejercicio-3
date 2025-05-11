@@ -1,62 +1,95 @@
-class Node:
-    def __init__(self, value):
-        self.val = value
-        self.left = None
-        self.right = None
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
 
 class BinaryTree:
     def __init__(self):
         self.root = None
-
+        
     def build_tree_from_list(self, values):
-        """Builds a binary tree (level order) from a list of values (None for missing nodes)."""
+        """Build a binary tree from a list of values in level-order traversal."""
         if not values:
             return None
-        nodes = [None if val is None else Node(val) for val in values]
-        kids = nodes[::-1]
-        self.root = kids.pop()
-        for node in nodes:
-            if node:
-                if kids: node.left = kids.pop()
-                if kids: node.right = kids.pop()
+            
+        self.root = TreeNode(values[0])
+        queue = [self.root]
+        i = 1
+        
+        while queue and i < len(values):
+            node = queue.pop(0)
+            
+            if i < len(values) and values[i] is not None:
+                node.left = TreeNode(values[i])
+                queue.append(node.left)
+            i += 1
+            
+            if i < len(values) and values[i] is not None:
+                node.right = TreeNode(values[i])
+                queue.append(node.right)
+            i += 1
+            
         return self.root
 
+
 def lowest_common_ancestor(root, p, q):
+    """
+    Find the lowest common ancestor of two nodes in a binary tree.
+    
+    Args:
+        root: Root node of the tree
+        p, q: Values of the two nodes to find LCA for
+        
+    Returns:
+        The value of the lowest common ancestor node, or None if not found
+    """
+
     if root is None:
         return None
+    
     if root.val == p or root.val == q:
-        return root
-    left = lowest_common_ancestor(root.left, p, q)
-    right = lowest_common_ancestor(root.right, p, q)
-    if left and right:
-        return root
-    return left if left else right
+        return root.val
+    
+    left_lca = lowest_common_ancestor(root.left, p, q)
+    right_lca = lowest_common_ancestor(root.right, p, q)
+    
+    if left_lca is not None and right_lca is not None:
+        return root.val
+    
+    return left_lca if left_lca is not None else right_lca
+
+
 def test_lowest_common_ancestor():
-    """Test the lowest_common_ancestor function. 👨‍👩‍👧‍👦"""
+    """Test the lowest_common_ancestor function."""
 
     tree1 = BinaryTree()
     tree1.build_tree_from_list([1, 2, 3, 4, 5, None, 6])
     lca1 = lowest_common_ancestor(tree1.root, 4, 6)
-    print("Test 1 - Expected: 1, Got:", lca1.val if lca1 else None)
-
+    print(f"LCA of 4 and 6 in tree1: {lca1}, Expected: 1")
+    assert lca1 == 1, f"Expected 1, got {lca1}"
+    
     tree2 = BinaryTree()
     tree2.build_tree_from_list([1, 2, 3, 4])
     lca2 = lowest_common_ancestor(tree2.root, 2, 4)
-    print("Test 2 - Expected: 2, Got:", lca2.val if lca2 else None)
-
+    print(f"LCA of 2 and 4 in tree2: {lca2}, Expected: 2")
+    assert lca2 == 2, f"Expected 2, got {lca2}"
+    
     tree3 = BinaryTree()
     tree3.build_tree_from_list([1, 2, 3])
     lca3 = lowest_common_ancestor(tree3.root, 2, 3)
-    print("Test 3 - Expected: 1, Got:", lca3.val if lca3 else None)
+    print(f"LCA of 2 and 3 in tree3: {lca3}, Expected: 1")
+    assert lca3 == 1, f"Expected 1, got {lca3}"
+    
+    lca4 = lowest_common_ancestor(tree3.root, 1, 3)
+    print(f"LCA of 1 and 3 in tree3: {lca4}, Expected: 1")
+    assert lca4 == 1, f"Expected 1, got {lca4}"
+    
+    lca5 = lowest_common_ancestor(tree3.root, 7, 3)
+    print(f"LCA of 7 (not in tree) and 3 in tree3: {lca5}, Expected: None")
+    
+    print("All tests passed!")
 
-    tree4 = BinaryTree()
-    tree4.build_tree_from_list([1, 2, 3])
-    lca4 = lowest_common_ancestor(tree4.root, 1, 3)
-    print("Test 4 - Expected: 1, Got:", lca4.val if lca4 else None)
-
-    tree5 = BinaryTree()
-    tree5.build_tree_from_list([1, 2, 3])
-    lca5 = lowest_common_ancestor(tree5.root, 2, 99) 
-    print("Test 5 - Expected: None, Got:", lca5.val if lca5 else None)
-
-test_lowest_common_ancestor()
+if __name__ == "__main__":
+    test_lowest_common_ancestor()
